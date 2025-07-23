@@ -4,7 +4,7 @@
 It supports advanced features like file attachments, prompt queue, streaming responses, themes, markdown/code viewing, and session management.
 
 <p align="center">
-  <img src="./app-icon.png" alt="Hearth-ui logo" width="160">
+  <img src="https://github.com/Saurabh682/Hearth-UI/blob/main/app-icon.png" alt="Hearth-ui logo" width="160">
 </p>
 
 ## ✨ Features
