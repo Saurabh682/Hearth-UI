@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ollama Chat UI</title>
+  <style>
+    :root {
+      --sidebar-bg: #f2f4f8;
+      --sidebar-fg: #1e1f22;
+      --main-bg: #ffffff;
+      --user-bg: #e3f2fd;
+      --model-bg: #e8f5e9;
+      --bubble-radius: 14px;
+      --accent: #1976d2;
+      --model-color: #1b5e20;
+      --user-color: #1565c0;
+      --border: #cbd5e0;
+      --button: #1976d2;
+    }
+
+    body.dark {
+      --sidebar-bg: #202124;
+      --sidebar-fg: #e8eaed;
+      --main-bg: #121212;
+      --user-bg: #202dff1e;
+      --model-bg: #00e6761c;
+      --model-color: #00e676;
+      --user-color: #82b1ff;
+      --border: #2e2e2e;
+      --button: #388e3c;
+    }
+
+    body.blue {
+      --sidebar-bg: #e3f2fd;
+      --sidebar-fg: #094b7a;
+      --main-bg: #ffffff;
+      --user-bg: #bbdefb;
+      --model-bg: #e1f5fe;
+      --user-color: #1976d2;
+      --model-color: #0288d1;
+      --button: #1976d2;
+    }
+
+    body.green {
+      --sidebar-bg: #e8f5e9;
+      --sidebar-fg: #214822;
+      --main-bg: #ffffff;
+      --user-bg: #b9f6ca;
+      --model-bg: #d0f8ce;
+      --user-color: #388e3c;
+      --model-color: #009688;
+      --button: #43a047;
+    }
+
+    body.amber {
+      --sidebar-bg: #fff8e1;
+      --sidebar-fg: #7d5c12;
+      --main-bg: #fffde7;
+      --user-bg: #ffe082;
+      --model-bg: #ffecb3;
+      --user-color: #ff6f00;
+      --model-color: #ffb300;
+      --button: #ffa000;
+    }
+
+    body.pink {
+      --sidebar-bg: #fce4ec;
+      --sidebar-fg: #880e4f;
+      --main-bg: #fff0f6;
+      --user-bg: #f8bbd0;
+      --model-bg: #fbc2eb;
+      --user-color: #d81b60;
+      --model-color: #ad1457;
+      --button: #ec407a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: var(--main-bg);
+      color: var(--sidebar-fg);
+      display: flex;
+      height: 100vh;
+    }
+    #sidebar {
+      width: 270px;
+      background: var(--sidebar-bg);
+      padding: 18px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+    }
+    button {
+      background: var(--button);
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .danger { background: #e53935 !important; }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 10px 20px;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border);
+      font-weight: bold;
+    }
+    #chatPanel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px 18px 10px;
+      background: var(--main-bg);
+    }
+    .bubble {
+      max-width: 76%;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      border-radius: var(--bubble-radius);
+      white-space: pre-wrap;
+    }
+    .user {
+      background: var(--user-bg);
+      color: var(--user-color);
+      margin-left: auto;
+    }
+    .model {
+      background: var(--model-bg);
+      color: var(--model-color);
+      margin-right: auto;
+    }
+    #inputPanel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--main-bg);
+    }
+    #userInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      resize: vertical;
+      min-height: 38px;
+      max-height: 100px;
+    }
+    #attachmentList {
+      list-style: circle;
+      font-size: 0.9em;
+      color: #666;
+      padding-left: 16px;
+      margin: 4px 0;
+    }
+    #attachmentList li {
+      word-wrap: break-word;
+    }
+    #sendBtn, #stopBtn {
+      padding: 10px 16px;
+      font-size: 1rem;
+      min-width: 60px;
+    }
+    #stopBtn {
+      background-color: #e53935;
+    }
+  </style>
+    <!-- MarkedJS for Markdown rendering -->
+	    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	  <!-- highlight.js for syntax highlighting -->
+	    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+
+<body>
+  <div id="sidebar">
+    <h2>💬 Ollama</h2>
+
+    <label for="api-url">API URL</label>
+    <input id="api-url" value="http://localhost:8081" />
+
+    <label for="sidebar-theme">Theme</label>
+    <select id="sidebar-theme">
+      <option value="auto">Auto</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="blue">Blue</option>
+      <option value="green">Green</option>
+      <option value="amber">Amber</option>
+      <option value="pink">Pink</option>
+    </select>
+
+    <label for="chatSessionsSelect">Chat Sessions</label>
+    <select id="chatSessionsSelect"></select>
+    <button id="newChatBtn">+ New Chat</button>
+    <button id="deleteChatBtn" class="danger">🗑 Delete Chat</button>
+
+    <label for="modelSelect">Model</label>
+    <select id="modelSelect"></select>
+    <p id="connectionStatus" style="font-size: 0.9em"></p>
+
+    <button id="save-settings">Save Settings</button>
+    <button id="reset-settings">Reset</button>
+  </div>
+
+  <main>
+    <header>Ollama Chat UI</header>
+    <div id="chatPanel"></div>
+    <div id="inputPanel">
+      <textarea id="userInput" placeholder="Type your message..."></textarea>
+      <button id="sendBtn" disabled>Send</button>
+      <button id="stopBtn" disabled>Stop</button>
+      <input type="file" id="fileInput" multiple />
+      <ul id="attachmentList"></ul>
+    </div>
+  </main>
+
+  <!-- Link to JS -->
+  <script src="script.js"></script>
+</body>
+</html>
