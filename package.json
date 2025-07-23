@@ -1,0 +1,35 @@
+{
+  "name": "hearth-ui",
+  "version": "1.0.0",
+  "description": "Private LLM chat UI powered by Ollama - with Markdown, streaming, chat sessions, themes, and attachments",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "electron": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^24.3.1"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.6.0"
+  },
+  "build": {
+    "appId": "com.hearth.ui",
+    "productName": "Hearth-UI",
+    "directories": {
+      "buildResources": "frontend"
+    },
+    "files": [
+      "frontend",
+      "main.js",
+      "package.json"
+    ],
+    "win": {
+      "icon": "frontend/app-icon.png",
+      "target": "portable"
+    }
+  }
+}
